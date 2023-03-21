@@ -1,33 +1,40 @@
 import axios from "axios";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+// import { useEffect, useState } from "react";
 import SingleBox from "../components/SingleBox";
-import { useQueries } from "react-query";
+import { useQueries, useQuery } from "react-query";
 
 // const fetchBatch = async() => {
 //     const promises =
 // }
 
-export default function HundredsOfGetRequests() {
-	const fetchTodo = async (id: number) => {
-		return axios.request({
-			url: `https://jsonplaceholder.typicode.com/todos/${id}`,
-			method: "get",
-		});
-	};
+const fetchTodo = async ({ queryKey }) => {
+	const [_, todoId] = queryKey;
+	return await axios.request({
+		url: `https://jsonplaceholder.typicode.com/todos/${todoId}`,
+		method: "get",
+	});
+};
+
+const fetchTodos = () => {
 	const queries = [];
 	for (let i = 0; i < 100; i++) {
 		queries.push({
 			queryKey: ["todo", i + 1],
-			queryFn: async () => {
-				const data = await fetchTodo(i + 1);
-				return data;
-			},
+			queryFn: fetchTodo,
+			refetchOnWindowFocus: false,
+			cacheTime: 300000,
+			// refetchOnMount: false,
+			staleTime: 300000,
 		});
 	}
 	const result: any = useQueries(queries);
-	console.log(result);
-	const [resArr, setResArr] = useState([]);
+	return result;
+};
+
+export default function HundredsOfGetRequests() {
+	// const [resArr, setResArr] = useState([]);
+
 	// for (let i = 0; i < 100; i++) {
 	// 	fetch(`https://jsonplaceholder.typicode.com/todos/${i + 1}`)
 	// 		.then((response) => response.json())
@@ -51,11 +58,21 @@ export default function HundredsOfGetRequests() {
 	// 	promiseExecution();
 	// }, []);
 
+	const todos = fetchTodos();
+	const result = useQuery(["todo101", 101], fetchTodo, {
+		cacheTime: 300000,
+		refetchOnWindowFocus: false,
+		// refetchOnMount: false,
+		staleTime: 300000,
+	});
+	console.log(result);
+
 	return (
 		<div className="boxes">
-			{result.map((res) => (
-				<SingleBox data={res.data.data} />
-			))}
+			{todos.map((todo) => {
+				return todo.status === "success" ? <SingleBox data={todo.data.data} /> : <></>;
+			})}
+			{result.status === "success" && <SingleBox data={result.data.data} />}
 			<Link href={"/FirstChatter"}>To First Chatter</Link>
 			<style jsx>{`
 				.boxes {
