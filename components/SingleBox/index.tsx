@@ -22,7 +22,7 @@ const SingleBox = (props: { data: ISingleBox }) => {
 			</p>
 			<p>
 				<b>Completed: </b>
-				{props.data.completed}
+				{props.data.completed ? "true" : "false"}
 			</p>
 		</div>
 	);
