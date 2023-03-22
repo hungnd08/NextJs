@@ -4,9 +4,19 @@ import Link from "next/link";
 import SingleBox from "../components/SingleBox";
 import { useQueries, useQuery } from "react-query";
 
-// const fetchBatch = async() => {
-//     const promises =
-// }
+const fetchBatch = async () => {
+	const promises = [];
+	for (let i = 0; i < 10; i++) {
+		promises.push(
+			axios.request({
+				url: `https://jsonplaceholder.typicode.com/todos/${i + 1}`,
+				method: "get",
+			})
+		);
+	}
+	const batchRes = await Promise.all(promises);
+	return batchRes;
+};
 
 const fetchTodo = async ({ queryKey }) => {
 	const [_, todoId] = queryKey;
